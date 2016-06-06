@@ -97,81 +97,29 @@ public class RBTree {
 			Node grandparent = parent.getParent();
 			Node sibling = parent.getSibling() ;
 			
-			if(sibling == null || sibling.isBlack()) {
+			if(sibling == null){
 				// If parent is the left hand son of grandparent
-				if(sibling == null || parent.getValue() < sibling.getValue()) {
-					if(parent.getLeft() != null && parent.getLeft().equals(node)){
-						// Fix colours
-						parent.setBlack();
-						grandparent.setRed();
-						// Fix relations
-						grandparent.setLeft(parent.getRight());
-						grandparent.getLeft().setParent(grandparent);
-						
-						parent.setRight(grandparent);
-						grandparent.setParent(parent);
-						// Check for possible new conflicts
-						fixTree(parent);
-						return ;
-					}
-					
-					else {
-						// Fix colours
-						node.setBlack();
-						grandparent.setRed();
-						
-						// Fix relations
-						node.setLeft(parent);
-						parent.setParent(node);
-						parent.setRight(null);
-						
-						node.setRight(grandparent);
-						grandparent.setParent(node);
-						
-						// Check for possible new conflicts
-						fixTree(node);
-						return ;
-					}
+				if(grandparent.getLeft() != null) {
+					fixLeft(node);
 					
 				}
 				// If parent is the right hand son of grandparent
 				else {
-					if(parent.getRight().equals(node)){
-						// Fix colours
-						parent.setBlack();
-						grandparent.setRed();
-						// Fix relations
-						grandparent.setRight(parent.getLeft());
-						grandparent.getLeft().setParent(grandparent);
-						
-						parent.setLeft(grandparent);
-						grandparent.setParent(parent);
-						// Check for possible new conflicts
-						fixTree(parent);
-						return ;
-					}
-					
-					else {
-						// Fix colours
-						node.setBlack();
-						grandparent.setRed();
-						
-						// Fix relations
-						node.setRight(parent);
-						parent.setParent(node);
-						parent.setLeft(null);
-						
-						node.setLeft(grandparent);
-						grandparent.setParent(node);
-						
-						// Check for possible new conflicts
-						fixTree(node);
-						return ;
-					}
+					fixRight(node);
 				}
-				
 			}
 			
+			if (sibling.isBlack()){
+				// If parent is the left hand son of grandparent
+				if(grandparent.getLeft().equals(parent)){
+					fixLeft(node);
+				}
+				// If parent is the right hand son of grandparent
+				else{
+					fixRight(node);
+				}
+			}
+
 			else {
 				parent.setBlack();
 				sibling.setBlack();
@@ -185,6 +133,87 @@ public class RBTree {
 			}
 		}
 		
+	}
+	
+	private void fixLeft(Node node){
+		Node parent = node.getParent();
+		Node grandparent = parent.getParent();
+		
+		// If the node is the left hand son
+		if(parent.getLeft() != null && parent.getLeft().equals(node)){
+			// Fix colours
+			parent.setBlack();
+			grandparent.setRed();
+			// Fix relations
+			grandparent.setLeft(parent.getRight());
+			grandparent.getLeft().setParent(grandparent);
+			
+			parent.setRight(grandparent);
+			grandparent.setParent(parent);
+			// Check for possible new conflicts
+			fixTree(parent);
+			return ;
+		}
+		
+		// If the node is the right hand son
+		else {
+			// Fix colours
+			node.setBlack();
+			grandparent.setRed();
+			
+			// Fix relations
+			node.setLeft(parent);
+			parent.setParent(node);
+			parent.setRight(null);
+			
+			node.setRight(grandparent);
+			grandparent.setParent(node);
+			grandparent.setLeft(null);
+			
+			// Check for possible new conflicts
+			fixTree(node);
+			return ;
+		}
+	}
+	
+	private void fixRight(Node node){
+		Node parent = node.getParent();
+		Node grandparent = parent.getParent();
+		
+		// If node is the right hand son
+		if(parent.getRight()!= null && parent.getRight().equals(node)){
+			// Fix colours
+			parent.setBlack();
+			grandparent.setRed();
+			// Fix relations
+			// Save parent's left hand tree
+			Node left = parent.getLeft();
+			parent.setLeft(grandparent);
+			grandparent.setParent(parent);
+			grandparent.setRight(left);
+			grandparent.getLeft().setParent(grandparent);	
+			// Check for possible new conflicts
+			fixTree(parent);
+			return ;
+		}
+		
+		else {
+			// Fix colours
+			node.setBlack();
+			grandparent.setRed();
+			
+			// Fix relations
+			node.setRight(parent);
+			parent.setParent(node);
+			parent.setLeft(null);
+			
+			node.setLeft(grandparent);
+			grandparent.setParent(node);
+			
+			// Check for possible new conflicts
+			fixTree(node);
+			return ;
+		}
 	}
 	
 	public boolean contains(int value) {
