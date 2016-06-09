@@ -47,6 +47,11 @@ public class Node {
 
 	public void setLeft(Node left) {
 		this.left = left;
+		
+		if (left != null) {
+			left.setParent(this);
+		}
+		
 	}
 
 	public Node getRight() {
@@ -55,6 +60,11 @@ public class Node {
 
 	public void setRight(Node right) {
 		this.right = right;
+		
+		if (right != null) {
+			right.setParent(this);
+		}
+		
 	}
 
 	public String getColour() {
@@ -112,17 +122,28 @@ public class Node {
 		return false;
 	}
 	
+	
 	/**
 	 * Two nodes are equal they have the same id.
 	 */
 	public boolean equals(Node node){
-		if (getValue() == node.getValue()) {
-			if (getParent().equals(node.getParent())){
-				return true;
-			}
+		if (node == null){
+			return false;
+		}
+		
+		if (this.getId() == node.getId()){
+			return true ;
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Print the node's value
+	 * 
+	 */
+	public void print() {
+		System.out.println(this.getValue() + " ");
 	}
 	
 
