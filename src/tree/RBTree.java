@@ -53,7 +53,14 @@ public class RBTree {
 		if (value > parent.getValue()) {
 			System.out.printf("Right side of %s \n", parent.getValue());
 			// Is the right a leaf?
-			if (parent.getRight() == null){
+			if (parent.getRight() != null){
+				System.out.println("Descending");
+				insert (value, parent.getRight());
+				return ;
+			}
+			
+			// Right is not a leaf, we must descend
+			else {
 				System.out.println("Is Right leaf");
 				// Create a new node
 				maxId++;
@@ -63,20 +70,13 @@ public class RBTree {
 				fixTree(node);
 				return ;
 			}
-			
-			// Right is not a leaf, we must descend
-			else {
-				System.out.println("Descending");
-				insert (value, parent.getRight());
-				return ;
-			}
 		}
 		
 		// Should we insert on the left?
 		if (value <= parent.getValue()) {
 			System.out.printf("Left side of %s \n", parent.getValue());
 			// Is the left a leaf?
-			if (parent.getLeft() == null){
+			if (parent.getLeft().equals(null)){
 				System.out.println("Is left leaf");
 				// Create a new node
 				maxId++;
@@ -96,11 +96,39 @@ public class RBTree {
 	}
 	
 	public void delete(int value) {
-		delete(root);
+		delete(value, root);
 	}
 	
-	private void delete(Node node) {
-		
+	private void delete(int value, Node node) {
+		if (contains(value)) {
+			if (node.getValue() == value) {
+				if (node.getLeft() == null && node.getRight() == null) {
+					Node parent = node.getParent();
+					if(parent.getLeft().equals(node)) {
+						parent.setLeft(null);
+					}
+					else {
+						parent.setRight(null);
+					}
+				}
+				if (node.isBlack()) {
+					if (node.getLeft() != null || node.getRight() != null) {
+						if (node.getLeft() != null) {
+							if (node.getLeft().isRed()) {
+								node.getLeft().setBlack();
+								node = node.getLeft();
+							}
+						}
+					}
+				}
+			}
+			else if (node.getValue() < value) {
+				delete(value, node.getLeft());
+			}
+			else if (node.getValue() > value) {
+				delete(value, node.getRight());
+			}
+		}
 	}
 	
 	/**
@@ -110,56 +138,51 @@ public class RBTree {
 	 * @param node
 	 */
 	private void fixTree(Node node) {
+		//System.out.printf("Fixing from node %s, id %s\n", node.getValue(), node.getId());
 		Node parent = node.getParent();
-		// All is well, return
-		if (parent.isBlack()){
+		// If parent is black there's nothing to do
+		if(parent.isBlack()) {
 			return ;
 		}
-		 
-		else if (!parent.isBlack()) {
-			Node grandparent = parent.getParent();
-			Node sibling = parent.getSibling() ;
-			
-			if(sibling == null){
-				// If parent is the left hand son of grandparent
-				if(grandparent.getLeft() != null) {
-					fixLeft(node);
-					
+		else if(node.isRed()){
+			Node sibling = parent.getSibling();
+			// If sibling is null or black
+			if (sibling == null || sibling.isBlack()) {
+				Node grandparent = parent.getParent();
+				// If node is the left hand son of parent
+				if (grandparent.getLeft() != null) {
+					if (grandparent.getLeft().equals(parent)) {
+						// Perform left handed trinode restructuring
+						fixLeft(node);
+					}
 				}
-				// If parent is the right hand son of grandparent
-				else {
-					fixRight(node);
+				else if (grandparent.getRight() != null) {
+					// If node is the right hand son of parent
+					if (grandparent.getRight().equals(parent)){
+						fixRight(node);
+					}
 				}
+				
 			}
-			
-			else if (sibling.isBlack()){
-				// If parent is the left hand son of grandparent
-				if(grandparent.getLeft().equals(parent)){
-					fixLeft(node);
-				}
-				// If parent is the right hand son of grandparent
-				else{
-					fixRight(node);
-				}
-			}
-
+			// If sibling is neither black nor null
 			else {
+				// Change parent's colour to black
 				parent.setBlack();
-				sibling.setBlack();
-				
-				if (!grandparent.equals(getRoot())){
-					grandparent.setRed();
-					fixTree(grandparent);
+				// Change sibling's colour to black, if it exists
+				if (sibling != null) {
+					sibling.setBlack();
 				}
-				
+				// Change grandparent's color to red if it isn't the root
+				Node grandparent = parent.getParent();
+				if (!isRoot(grandparent)){
+					grandparent.setRed();
+				}
 				return ;
 			}
 		}
-		
 	}
 	
 	/**
-	 * 
 	 * Make the left hand side of a node obey 
 	 * the properties of Red-Black Trees
 	 * 
@@ -169,107 +192,168 @@ public class RBTree {
 		Node parent = node.getParent();
 		Node grandparent = parent.getParent();
 		
-		// If the node is the left hand son
-		if(parent.getLeft() != null) {
-			if(parent.getLeft().equals(node)) {
-				// Fix colours
-				parent.setBlack();
-				grandparent.setRed();
-				// Fix relations
-				grandparent.setLeft(parent.getRight());
-				grandparent.getLeft().setParent(grandparent);
-				
-				parent.setRight(grandparent);
-				// Check for possible new conflicts
-				fixTree(parent);
-				return ;
-			}	
+		if (parent.getLeft().equals(node)) {
+			// Fix colors
+			parent.setBlack();
+			grandparent.setRed();
+			// Fix relations
+			if (isRoot(grandparent)) {
+				System.out.printf("New root is %s\n", parent.getId());
+				setRoot(parent);
+			}
+			else {
+				Node greatgrandparent = grandparent.getParent();
+				if (greatgrandparent.getLeft() != null) {
+					if (greatgrandparent.getLeft().equals(grandparent)) {
+						greatgrandparent.setLeft(parent);
+					}
+				}
+				else {
+					greatgrandparent.setRight(parent);
+				}
+			}
+			Node save = parent.getRight();
+			grandparent.setParent(parent);
+			parent.setRight(grandparent);
+			grandparent.setLeft(save);
+			
+			// Check for possible new errors
+			fixTree(parent);
+			return ;
 		}
-		
-		// If the node is the right hand child
-		else {
-			// Fix colours
+		else if (parent.getRight().equals(node)) {
+			// Fix colors
 			node.setBlack();
 			grandparent.setRed();
-			
 			// Fix relations
-			node.setLeft(parent);
+			if (isRoot(grandparent)) {
+				System.out.printf("New root is %s\n", parent.getId());
+				setRoot(node);
+			}
+			else {
+				Node greatgrandparent = grandparent.getParent();
+				if (greatgrandparent.getLeft() != null) {
+					if (greatgrandparent.getLeft().equals(grandparent)) {
+						greatgrandparent.setLeft(node);
+					}
+				}
+				else {
+					greatgrandparent.setRight(node);
+				}
+			}
+			parent.setParent(node);
 			parent.setRight(null);
-			
 			node.setRight(grandparent);
 			grandparent.setLeft(null);
 			
-			// Check for possible new conflicts
+			// Check for possible new errors
 			fixTree(node);
 			return ;
 		}
 	}
 	
+	
 	/**
-	 * 
 	 * Make the right hand side of the tree obey
-	 *  the properties of Red-Black Trees
+	 * the properties of Red-Black Trees
 	 * 
 	 * @param node
 	 */
 	private void fixRight(Node node){
 		Node parent = node.getParent();
 		Node grandparent = parent.getParent();
-		Node greatgrandparent = grandparent.getParent();
 		
-		// If node is the right hand son
-		if(parent.getRight()!= null) {
-			if (parent.getRight().equals(node)) {
-				// Fix colours
-				parent.setBlack();
-				grandparent.setRed();
-				// Fix relations
-				// Save parent's left hand tree
-				Node left = parent.getLeft();
-				Node gp = parent.getParent();
-				if (greatgrandparent != null) {
-					if (greatgrandparent.getRight().equals(grandparent)) {
-						greatgrandparent.setRight(parent);
-					}
-					else if (greatgrandparent.getLeft().equals(grandparent)) {
+		if (parent.getRight().equals(node)) {
+			// Fix colors
+			parent.setBlack();
+			grandparent.setRed();
+			// Fix relations
+			if (isRoot(grandparent)) {
+				System.out.printf("New root is %s\n", parent.getId());
+				setRoot(parent);
+			}
+			else {
+				Node greatgrandparent = grandparent.getParent();
+				if (greatgrandparent.getLeft() != null) {
+					System.out.println("not null");
+					if (greatgrandparent.getLeft().equals(grandparent)) {
 						greatgrandparent.setLeft(parent);
 					}
+					else {
+						greatgrandparent.setRight(parent);
+					}
 				}
-				parent.setLeft(gp);
-				grandparent.setRight(left);	
-				// Check for possible new conflicts
-				fixTree(parent);
-				return ;
+				else {
+					greatgrandparent.setRight(parent);
+				}
 			}
+			Node save = parent.getLeft();
+			grandparent.setParent(parent);
+			parent.setLeft(grandparent);
+			grandparent.setRight(save);
+			
+			// Check for possible new errors
+			fixTree(parent);
+			return ;
 		}
-		
-		else {
-			// Fix colours
+		else if (parent.getLeft().equals(node)) {
+			// Fix colors
 			node.setBlack();
 			grandparent.setRed();
-
 			// Fix relations
-			if (greatgrandparent != null) {
-				if (greatgrandparent.getLeft().equals(grandparent)) {
-					greatgrandparent.setLeft(node);
+			if (isRoot(grandparent)) {
+				System.out.printf("New root is %s\n", parent.getId());
+				setRoot(node);
+			}
+			else {
+				Node greatgrandparent = grandparent.getParent();
+				if (greatgrandparent.getLeft() != null) {
+					if (greatgrandparent.getLeft().equals(grandparent)) {
+						System.out.printf("%s is the new left son of %s\n", parent.getValue(), greatgrandparent.getValue());
+						greatgrandparent.setLeft(node);
+					}
 				}
-				else if (greatgrandparent.getRight().equals(grandparent)){
+				else {
 					greatgrandparent.setRight(node);
+					System.out.printf("%s is the new right son of %s\n", parent.getValue(), greatgrandparent.getValue());
 				}
 			}
-			node.setRight(parent);
+			parent.setParent(node);
 			parent.setLeft(null);
+			node.setRight(grandparent);
+			grandparent.setRight(null);
 			
-			node.setLeft(grandparent);
-			
-			// Check for possible new conflicts
+			// Check for possible new errors
 			fixTree(node);
 			return ;
 		}
+		
+	}
+	/**
+	 * Checks if a value exists in the tree.
+	 * 
+	 * @param value 
+	 * @return True if the value exists in the tree or false otherwise
+	 */
+	public boolean contains(int value) {
+		return contains(value, root);
 	}
 	
-	public boolean contains(int value) {
-		return true;
+	private boolean contains(int value, Node node) {
+		if (node == null) {
+			return false;
+		}
+		if (value == node.getValue()) {
+			return true;
+		}
+		else if (value < node.getValue()) {
+			return contains(value, node.getLeft());
+		}
+		else if (value > node.getValue()) {
+			return contains(value, node.getRight());
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -317,6 +401,9 @@ public class RBTree {
 		
 		System.out.println("\nNode ids:");
 		printIds(root);
+		
+		System.out.println();
+		printColours(root);
 	}
 	
 	private void print(Node node){
@@ -334,9 +421,18 @@ public class RBTree {
 			return ;
 		}
 		
-		print(node.getLeft());
+		printIds(node.getLeft());
 		System.out.print(node.getId() + " ");
-		print(node.getRight());
+		printIds(node.getRight());
+	}
+	private void printColours(Node node) {
+		if (node == null) {
+			return ;
+		}
+		
+		printColours(node.getLeft());
+		System.out.print(node.getColour() + " ");
+		printColours(node.getRight());
 	}
 
 }
