@@ -95,7 +95,7 @@ public class Node {
 	public Node getSibling() {
 		Node parent = getParent();
 		
-		if (parent.getLeft() == null) {
+		if (parent == null || parent.getLeft() == null) {
 			return null ;
 		}
 		
@@ -122,16 +122,19 @@ public class Node {
 		return false;
 	}
 	
+	public boolean isRed(){
+		if (getColour().equals("red")){
+			return true;
+		}
+		return false;
+	}
+	
 	
 	/**
 	 * Two nodes are equal they have the same id.
 	 */
 	public boolean equals(Node node){
-		if (node == null){
-			return false;
-		}
-		
-		if (this.getId() == node.getId()){
+		if (node != null && this.getId() == node.getId()){
 			return true ;
 		}
 		
@@ -143,7 +146,7 @@ public class Node {
 	 * 
 	 */
 	public void print() {
-		System.out.println(this.getValue() + " ");
+		System.out.print(this.getValue() + " ");
 	}
 	
 
