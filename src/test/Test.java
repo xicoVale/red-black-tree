@@ -14,6 +14,13 @@ public class Test {
 		populateTree(input);
 		
 		tree.print();
+		
+		tree.max();
+		
+		tree.min();
+		
+		System.out.println(tree.contains(5));
+		System.out.println(tree.contains(6));
 	}
 	
 	/**
