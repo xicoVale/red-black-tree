@@ -20,6 +20,17 @@ public class RBTree {
 		this.root = root;
 	}
 	
+	public boolean isRoot(Node node) {
+		if (node == null) {
+			return false;
+		}
+		
+		else if (getRoot().equals(node)) {
+			return true;
+		}
+		return false;
+	}
+	
 	/**
 	 * 
 	 * Insert a value into the tree
