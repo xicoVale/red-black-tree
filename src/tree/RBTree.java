@@ -2,7 +2,7 @@ package tree;
 
 public class RBTree {
 	private Node root;
-	private int maxId = 1;
+	private int maxId = 0;
 	
 	public RBTree () {}
 	
