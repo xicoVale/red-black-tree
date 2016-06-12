@@ -76,7 +76,13 @@ public class RBTree {
 		if (value <= parent.getValue()) {
 			System.out.printf("Left side of %s \n", parent.getValue());
 			// Is the left a leaf?
-			if (parent.getLeft().equals(null)){
+			if (parent.getLeft() != null){
+				System.out.println("Descending");
+				insert (value, parent.getLeft());
+				return ;
+			}
+			
+			else {
 				System.out.println("Is left leaf");
 				// Create a new node
 				maxId++;
@@ -84,12 +90,6 @@ public class RBTree {
 				
 				parent.setLeft(node);
 				fixTree(node);
-				return ;
-			}
-			
-			else {
-				System.out.println("Descending");
-				insert (value, parent.getLeft());
 				return ;
 			}
 		}
@@ -198,7 +198,6 @@ public class RBTree {
 			grandparent.setRed();
 			// Fix relations
 			if (isRoot(grandparent)) {
-				System.out.printf("New root is %s\n", parent.getId());
 				setRoot(parent);
 			}
 			else {
@@ -227,7 +226,6 @@ public class RBTree {
 			grandparent.setRed();
 			// Fix relations
 			if (isRoot(grandparent)) {
-				System.out.printf("New root is %s\n", parent.getId());
 				setRoot(node);
 			}
 			else {
@@ -269,13 +267,11 @@ public class RBTree {
 			grandparent.setRed();
 			// Fix relations
 			if (isRoot(grandparent)) {
-				System.out.printf("New root is %s\n", parent.getId());
 				setRoot(parent);
 			}
 			else {
 				Node greatgrandparent = grandparent.getParent();
 				if (greatgrandparent.getLeft() != null) {
-					System.out.println("not null");
 					if (greatgrandparent.getLeft().equals(grandparent)) {
 						greatgrandparent.setLeft(parent);
 					}
@@ -302,20 +298,17 @@ public class RBTree {
 			grandparent.setRed();
 			// Fix relations
 			if (isRoot(grandparent)) {
-				System.out.printf("New root is %s\n", parent.getId());
 				setRoot(node);
 			}
 			else {
 				Node greatgrandparent = grandparent.getParent();
 				if (greatgrandparent.getLeft() != null) {
 					if (greatgrandparent.getLeft().equals(grandparent)) {
-						System.out.printf("%s is the new left son of %s\n", parent.getValue(), greatgrandparent.getValue());
 						greatgrandparent.setLeft(node);
 					}
 				}
 				else {
 					greatgrandparent.setRight(node);
-					System.out.printf("%s is the new right son of %s\n", parent.getValue(), greatgrandparent.getValue());
 				}
 			}
 			parent.setParent(node);
@@ -383,12 +376,12 @@ public class RBTree {
 		System.out.printf("Minimum value is %s\n", min);
 	}
 	
-	private int min(Node root) {
-		if (root.getLeft() == null) {
-			return root.getValue() ;
+	private int min(Node node) {	
+		if (node.getLeft() == null) {
+			return node.getValue() ;
 		}
 		else {
-			return max(root.getLeft()) ;
+			return min(node.getLeft()) ;
 		}
 	}
 	
@@ -404,6 +397,7 @@ public class RBTree {
 		
 		System.out.println();
 		printColours(root);
+		System.out.println();
 	}
 	
 	private void print(Node node){
