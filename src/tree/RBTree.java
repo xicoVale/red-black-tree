@@ -89,45 +89,82 @@ public class RBTree {
 				Node node = new Node (value, maxId, parent);
 				
 				parent.setLeft(node);
-				fixTree(node);
+				fixTreeInsert(node);
 				return ;
 			}
 		}
 	}
 	
 	public void delete(int value) {
-		delete(value, root);
+		if (!contains(value)) {
+			System.out.println("Value does not exist in the tree");
+		}
+		else {
+			delete(value, root);
+		}
 	}
 	
 	private void delete(int value, Node node) {
-		if (contains(value)) {
-			if (node.getValue() == value) {
-				if (node.getLeft() == null && node.getRight() == null) {
-					Node parent = node.getParent();
-					if(parent.getLeft().equals(node)) {
-						parent.setLeft(null);
-					}
-					else {
-						parent.setRight(null);
-					}
+		if (node.getValue() == value) {
+			// If the node is red we can remove it with no violations
+			if (node.isRed()) {
+				Node parent = node.getParent();
+				if (node.isLeft()) {
+					parent.setLeft(null);
 				}
-				if (node.isBlack()) {
-					if (node.getLeft() != null || node.getRight() != null) {
-						if (node.getLeft() != null) {
-							if (node.getLeft().isRed()) {
-								node.getLeft().setBlack();
-								node = node.getLeft();
-							}
+				if (node.isRight()) {
+					parent.setRight(null);
+				}
+				return ;
+			}
+			// If the node is black then many violations can occur
+			else {
+				// If it has no children then no violations occur
+				if (node.countChildren() == 0) {
+					node.remove();
+				}
+				// If it has one child and that child is red then we recolour 
+				// the child and move it to node's position in the tree
+				if (node.countChildren() == 1) {
+					if (node.getLeft() != null) {
+						if (node.getLeft().isRed()) {
+							Node child = node.getLeft();
+							child.setBlack();
+							node.replaceWith(child);
+							return ;
+						}
+					}
+					if (node.getRight() != null) {
+						if (node.getRight().isRed()) {
+							Node child = node.getRight();
+							child.setBlack();
+							node.replaceWith(child);
+							return ;
 						}
 					}
 				}
+				if (node.countChildren() == 2) {
+					Node parent = node.getParent();
+					Node right = node.getRight();
+					if(node.isLeft()) {
+						parent.setLeft(node.getLeft());
+						parent.getLeft().setBlack();
+						parent.getLeft().setRight(right);
+					}
+					if(node.isRight()) {
+						parent.setRight(node.getLeft());
+						parent.getRight().setBlack();
+						parent.getRight().setRight(right);
+					}
+					return ;
+				}
 			}
-			else if (node.getValue() < value) {
-				delete(value, node.getLeft());
-			}
-			else if (node.getValue() > value) {
-				delete(value, node.getRight());
-			}
+		}
+		else if (value < node.getValue()) {
+			delete(value, node.getLeft());
+		}
+		else if (value > node.getValue()){
+			delete(value, node.getRight());
 		}
 	}
 	
