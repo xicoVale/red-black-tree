@@ -67,7 +67,7 @@ public class RBTree {
 				Node node = new Node (value, maxId, parent);
 				
 				parent.setRight(node);
-				fixTree(node);
+				fixTreeInsert(node);
 				return ;
 			}
 		}
@@ -137,7 +137,7 @@ public class RBTree {
 	 * 
 	 * @param node
 	 */
-	private void fixTree(Node node) {
+	private void fixTreeInsert(Node node) {
 		//System.out.printf("Fixing from node %s, id %s\n", node.getValue(), node.getId());
 		Node parent = node.getParent();
 		// If parent is black there's nothing to do
