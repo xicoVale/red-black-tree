@@ -227,62 +227,17 @@ public class RBTree {
 	 */
 	private void fixLeft(Node node){
 		Node parent = node.getParent();
-		Node grandparent = parent.getParent();
 		
 		if (parent.getLeft().equals(node)) {
-			// Fix colors
-			parent.setBlack();
-			grandparent.setRed();
-			// Fix relations
-			if (isRoot(grandparent)) {
-				setRoot(parent);
-			}
-			else {
-				Node greatgrandparent = grandparent.getParent();
-				if (greatgrandparent.getLeft() != null) {
-					if (greatgrandparent.getLeft().equals(grandparent)) {
-						greatgrandparent.setLeft(parent);
-					}
-				}
-				else {
-					greatgrandparent.setRight(parent);
-				}
-			}
-			Node save = parent.getRight();
-			grandparent.setParent(parent);
-			parent.setRight(grandparent);
-			grandparent.setLeft(save);
-			
+			singleRotation(node);
 			// Check for possible new errors
-			fixTree(parent);
+			fixTreeInsert(parent);
 			return ;
 		}
 		else if (parent.getRight().equals(node)) {
-			// Fix colors
-			node.setBlack();
-			grandparent.setRed();
-			// Fix relations
-			if (isRoot(grandparent)) {
-				setRoot(node);
-			}
-			else {
-				Node greatgrandparent = grandparent.getParent();
-				if (greatgrandparent.getLeft() != null) {
-					if (greatgrandparent.getLeft().equals(grandparent)) {
-						greatgrandparent.setLeft(node);
-					}
-				}
-				else {
-					greatgrandparent.setRight(node);
-				}
-			}
-			parent.setParent(node);
-			parent.setRight(null);
-			node.setRight(grandparent);
-			grandparent.setLeft(null);
-			
+			tripleRotation(node);
 			// Check for possible new errors
-			fixTree(node);
+			fixTreeInsert(node);
 			return ;
 		}
 	}
@@ -296,69 +251,108 @@ public class RBTree {
 	 */
 	private void fixRight(Node node){
 		Node parent = node.getParent();
-		Node grandparent = parent.getParent();
 		
 		if (parent.getRight().equals(node)) {
-			// Fix colors
-			parent.setBlack();
-			grandparent.setRed();
-			// Fix relations
-			if (isRoot(grandparent)) {
-				setRoot(parent);
-			}
-			else {
-				Node greatgrandparent = grandparent.getParent();
-				if (greatgrandparent.getLeft() != null) {
-					if (greatgrandparent.getLeft().equals(grandparent)) {
-						greatgrandparent.setLeft(parent);
-					}
-					else {
-						greatgrandparent.setRight(parent);
-					}
+			singleRotation(node);
+			// Check for possible new errors
+			fixTreeInsert(parent);
+			return ;
+		}
+		else if (parent.getLeft().equals(node)) {
+			tripleRotation(node);
+			// Check for possible new errors
+			fixTreeInsert(node);
+			return ;
+		}
+		
+	}
+	/**
+	 * Single rotation method. Makes node's parent head of the subtree
+	 * @param node
+	 */
+	private void singleRotation(Node node) {
+		Node parent = node.getParent();
+		Node grandparent = parent.getParent();
+		
+		// Fix colors
+		parent.setBlack();
+		grandparent.setRed();
+		// Fix relations
+		if (isRoot(grandparent)) {
+			setRoot(parent);
+		}
+		else {
+			Node greatgrandparent = grandparent.getParent();
+			if (greatgrandparent.getLeft() != null) {
+				if (greatgrandparent.getLeft().equals(grandparent)) {
+					greatgrandparent.setLeft(parent);
 				}
 				else {
 					greatgrandparent.setRight(parent);
 				}
 			}
-			Node save = parent.getLeft();
-			grandparent.setParent(parent);
-			parent.setLeft(grandparent);
-			grandparent.setRight(save);
-			
-			// Check for possible new errors
-			fixTree(parent);
-			return ;
+			else {
+				greatgrandparent.setRight(parent);
+			}
 		}
-		else if (parent.getLeft().equals(node)) {
-			// Fix colors
-			node.setBlack();
-			grandparent.setRed();
-			// Fix relations
-			if (isRoot(grandparent)) {
-				setRoot(node);
+		if (parent.hasRight()) {
+			if (parent.getRight().equals(node)) {
+				Node save = parent.getLeft();
+				grandparent.setParent(parent);
+				parent.setLeft(grandparent);
+				grandparent.setRight(save);
+			}
+		}
+		else {
+			Node save = parent.getRight();
+			grandparent.setParent(parent);
+			parent.setRight(grandparent);
+			grandparent.setLeft(save);
+		}
+		
+	}
+	/**
+	 * Method that performs a triple rotation where node become the head of the tree  
+	 * @param node
+	 */
+	private void tripleRotation(Node node) {
+		Node parent = node.getParent();
+		Node grandparent = parent.getParent();
+		
+		// Fix colors
+		node.setBlack();
+		grandparent.setRed();
+		// Fix relations
+		if (isRoot(grandparent)) {
+			setRoot(node);
+		}
+		else {
+			Node greatgrandparent = grandparent.getParent();
+			if (greatgrandparent.getLeft() != null) {
+				if (greatgrandparent.getLeft().equals(grandparent)) {
+					greatgrandparent.setLeft(node);
+				}
 			}
 			else {
-				Node greatgrandparent = grandparent.getParent();
-				if (greatgrandparent.getLeft() != null) {
-					if (greatgrandparent.getLeft().equals(grandparent)) {
-						greatgrandparent.setLeft(node);
-					}
-				}
-				else {
-					greatgrandparent.setRight(node);
-				}
+				greatgrandparent.setRight(node);
 			}
+		}
+		
+		if (parent.getRight().equals(node)) {
+			parent.setParent(node);
+			parent.setRight(null);
+			node.setRight(grandparent);
+			grandparent.setLeft(null);
+		}
+		else {
 			parent.setParent(node);
 			parent.setLeft(null);
 			node.setRight(grandparent);
 			grandparent.setRight(null);
-			
-			// Check for possible new errors
-			fixTree(node);
-			return ;
 		}
 		
 	}
+	
 	/**
 	 * Checks if a value exists in the tree.
 	 * 
